@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Interview Coach — Meteor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/css/shared.css"/>
+  <style>
+  /* Chat UI mockup */
+  .chat-wrap{background:var(--white);border-radius:14px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,.1)}
+  .chat-head{padding:13px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+  .chat-head-left{display:flex;align-items:center;gap:10px}
+  .chat-avatar{width:30px;height:30px;border-radius:50%;background:var(--black);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .chat-name{font-family:'Bricolage Grotesque',sans-serif;font-size:13px;font-weight:700;color:var(--black)}
+  .chat-status{font-size:10px;color:#16a34a;font-weight:600;display:flex;align-items:center;gap:4px}
+  .chat-status-dot{width:6px;height:6px;border-radius:50%;background:#16a34a;animation:pulse 1.4s infinite}
+  .chat-session-tag{font-size:10px;font-weight:700;padding:3px 9px;border-radius:100px;background:#f3e8ff;color:#7e22ce;border:1px solid #e9d5ff}
+  .chat-body{padding:18px 18px 12px;display:flex;flex-direction:column;gap:12px;background:var(--bg-off)}
+  /* Bubbles */
+  .bubble{display:flex;gap:9px;align-items:flex-start;max-width:88%}
+  .bubble.ai{align-self:flex-start}
+  .bubble.user{align-self:flex-end;flex-direction:row-reverse}
+  .bubble-ava{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+  .bubble.ai .bubble-ava{background:var(--black);color:var(--lime)}
+  .bubble.user .bubble-ava{background:#dbeafe;color:#1d4ed8}
+  .bubble-msg{padding:11px 13px;border-radius:13px;font-size:12px;line-height:1.6;color:var(--text)}
+  .bubble.ai .bubble-msg{background:var(--white);border:1.5px solid var(--border);border-radius:4px 13px 13px 13px}
+  .bubble.user .bubble-msg{background:#0d0d0d;color:#fff;border-radius:13px 4px 13px 13px}
+  .bubble-label{font-size:10px;color:var(--light);margin-bottom:4px}
+  .bubble.user .bubble-label{text-align:right}
+  /* Feedback badge */
+  .chat-feedback{display:flex;align-items:flex-start;gap:8px;background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;padding:10px 12px;margin-top:0}
+  .chat-feedback-icon{font-size:13px;flex-shrink:0}
+  .chat-feedback-text{font-size:11px;color:#15803d;line-height:1.55}
+  .chat-feedback-text strong{font-weight:700}
+  /* Input area */
+  .chat-input-area{padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:center;background:var(--white)}
+  .chat-input{flex:1;padding:9px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:12px;color:var(--muted);font-family:'DM Sans',sans-serif;background:var(--bg-off);outline:none}
+  .chat-send{width:32px;height:32px;border-radius:8px;background:var(--black);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+
+  /* Stats */
+  .ic-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--border);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:48px}
+  .ic-stat{background:var(--white);padding:28px 20px;text-align:center}
+  .ic-stat-val{font-family:'Bricolage Grotesque',sans-serif;font-size:38px;font-weight:800;letter-spacing:-0.03em;color:var(--black);margin-bottom:4px}
+  .ic-stat-val span{color:var(--lime)}
+  .ic-stat-lbl{font-size:13px;color:var(--muted)}
+
+  .sec-h{text-align:center;margin-bottom:48px}
+  .sec-h h2{font-family:'Bricolage Grotesque',sans-serif;font-size:clamp(26px,3.5vw,40px);font-weight:800;letter-spacing:-0.025em;color:var(--black);margin-bottom:10px}
+  .sec-h p{font-size:16px;color:var(--muted)}
+
+  /* Question bank card in benefits */
+  .qbank-card{background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+  .qbank-head{font-family:'Bricolage Grotesque',sans-serif;font-size:14px;font-weight:700;color:var(--black);margin-bottom:14px}
+  .qbank-cat{margin-bottom:14px}
+  .qbank-cat-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:7px}
+  .qbank-q{font-size:12px;color:var(--text);padding:8px 11px;border-radius:8px;background:var(--bg-off);border:1px solid var(--border);margin-bottom:5px;line-height:1.5;cursor:pointer;transition:border-color .15s,background .15s}
+  .qbank-q:hover{border-color:var(--black);background:var(--white)}
+  .qbank-q.active{border-color:var(--black);background:var(--black);color:var(--lime)}
+
+  @media(max-width:768px){.ic-stats{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="container">
+    <div class="nav-inner">
+      <a href="/" class="logo">
+        <div class="logo-mark"><svg width="12" height="16" viewBox="0 0 12 16" fill="none"><path d="M7.5 1L1 9.5H5.5L3.5 15L11 6.5H6.5L7.5 1Z" fill="#C5F135"/></svg></div>
+        Meteor
+      </a>
+      <ul class="nav-list">
+        <li class="has-drop">
+          <button class="nav-dd-btn" aria-expanded="false">
+            Features
+            <svg class="nav-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M2 4.5L6 8.5L10 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="nav-drop">
+            <a href="/features/auto-apply.html" class="dd-item"><div class="dd-icon">⚡</div><div><div class="dd-name">Auto-Apply</div><div class="dd-desc">Apply to 200+ jobs automatically</div></div></a>
+            <a href="/features/resume-builder.html" class="dd-item"><div class="dd-icon">📄</div><div><div class="dd-name">Resume Builder</div><div class="dd-desc">AI-optimized resumes for every job</div></div></a>
+            <a href="/features/ats-checker.html" class="dd-item"><div class="dd-icon">✅</div><div><div class="dd-name">ATS Checker</div><div class="dd-desc">Beat the algorithm, score your resume</div></div></a>
+            <a href="/features/job-tracker.html" class="dd-item"><div class="dd-icon">📊</div><div><div class="dd-name">Job Tracker</div><div class="dd-desc">Kanban board for your applications</div></div></a>
+            <a href="/features/interview-coach.html" class="dd-item"><div class="dd-icon">🎤</div><div><div class="dd-name">Interview Coach</div><div class="dd-desc">AI-powered interview prep</div></div></a>
+          </div>
+        </li>
+        <li><a href="/#pricing">Pricing</a></li>
+        <li><a href="#">Blog</a></li>
+      </ul>
+      <div class="nav-btns">
+        <a href="/auth/signin.html" class="btn btn-ghost">Sign in</a>
+        <a href="/auth/signup.html" class="btn btn-black">Get started</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="feat-hero">
+  <div class="container">
+    <div class="feat-eyebrow la la1">
+      <span class="feat-eyebrow-dot"></span>
+      Interview Coach
+    </div>
+    <h1 class="la la2">Walk in confident, <span class="hl">walk out hired</span></h1>
+    <p class="la la3">Meteor's AI coach preps you with role-specific questions, evaluates your answers, and gives you real-time feedback — so you're ready for anything the interviewer throws at you.</p>
+    <div class="feat-hero-btns la la4">
+      <a href="/auth/signup.html" class="btn btn-black btn-lg">Start practicing free →</a>
+      <a href="#how" class="btn btn-ghost btn-lg">See sample session</a>
+    </div>
+
+    <!-- Chat mockup -->
+    <div class="mockup-frame la la5">
+      <div class="mockup-bar">
+        <div class="mockup-dots">
+          <div class="mockup-dot" style="background:#ff5f57"></div>
+          <div class="mockup-dot" style="background:#febc2e"></div>
+          <div class="mockup-dot" style="background:#28c840"></div>
+        </div>
+        <span class="mockup-title">Meteor — Interview Coach</span>
+      </div>
+      <div class="chat-wrap">
+        <div class="chat-head">
+          <div class="chat-head-left">
+            <div class="chat-avatar">
+              <svg width="10" height="14" viewBox="0 0 12 16" fill="none"><path d="M7.5 1L1 9.5H5.5L3.5 15L11 6.5H6.5L7.5 1Z" fill="#C5F135"/></svg>
+            </div>
+            <div>
+              <div class="chat-name">Meteor Coach</div>
+              <div class="chat-status"><span class="chat-status-dot"></span> Live session</div>
+            </div>
+          </div>
+          <span class="chat-session-tag">Senior Frontend @ Stripe</span>
+        </div>
+        <div class="chat-body">
+          <!-- AI question -->
+          <div class="bubble ai">
+            <div class="bubble-ava">M</div>
+            <div>
+              <div class="bubble-label">Meteor Coach</div>
+              <div class="bubble-msg">Tell me about a time you led a complex project under tight deadlines. What was your approach and what was the outcome?</div>
+            </div>
+          </div>
+          <!-- User answer -->
+          <div class="bubble user">
+            <div class="bubble-ava">AJ</div>
+            <div>
+              <div class="bubble-label">You</div>
+              <div class="bubble-msg">At my last role, I led a complete redesign of our checkout flow with a 3-week deadline. I broke it into daily milestones, coordinated with 4 engineers, and we shipped on time — reducing drop-off by 22%.</div>
+            </div>
+          </div>
+          <!-- Feedback -->
+          <div class="chat-feedback">
+            <span class="chat-feedback-icon">✦</span>
+            <div class="chat-feedback-text"><strong>Strong answer.</strong> Great use of STAR format and a specific metric. Tip: mention one challenge you overcame to show resilience — interviewers love that detail.</div>
+          </div>
+          <!-- Follow-up question -->
+          <div class="bubble ai">
+            <div class="bubble-ava">M</div>
+            <div>
+              <div class="bubble-label">Meteor Coach</div>
+              <div class="bubble-msg">Nice. Follow-up: what would you do differently if you ran that project again?</div>
+            </div>
+          </div>
+        </div>
+        <div class="chat-input-area">
+          <div class="chat-input">Type your answer...</div>
+          <div class="chat-send">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M12 7L2 2l2.5 5L2 12l10-5Z" fill="#C5F135"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="section" style="padding-top:0">
+  <div class="container">
+    <div class="ic-stats reveal">
+      <div class="ic-stat"><div class="ic-stat-val">500<span>+</span></div><div class="ic-stat-lbl">Role-specific interview questions</div></div>
+      <div class="ic-stat"><div class="ic-stat-val">92<span>%</span></div><div class="ic-stat-lbl">Feel more confident after prep</div></div>
+      <div class="ic-stat"><div class="ic-stat-val">2.4<span>×</span></div><div class="ic-stat-lbl">More offers after practicing with Meteor</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how" style="padding-top:0">
+  <div class="container">
+    <div class="sec-h reveal">
+      <h2>How Interview Coach works</h2>
+      <p>Practice like it's real. Walk in like you've done it before.</p>
+    </div>
+    <div class="how-grid">
+      <div class="how-step reveal d1">
+        <div class="how-num">1</div>
+        <h3>Meteor analyzes the job</h3>
+        <p>Paste the job description. Meteor identifies the exact skills, seniority signals, and question types the company typically uses — tailoring your prep to that specific role.</p>
+      </div>
+      <div class="how-step reveal d2">
+        <div class="how-num">2</div>
+        <h3>Practice with AI questions</h3>
+        <p>Work through behavioral, technical, and system design questions generated for your exact role. Answer in your own words, at your own pace — just like a real interview.</p>
+      </div>
+      <div class="how-step reveal d3">
+        <div class="how-num">3</div>
+        <h3>Get feedback and improve</h3>
+        <p>After each answer, Meteor scores your response, highlights what worked, and suggests exactly how to make it stronger. Track improvement across sessions.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BENEFITS -->
+<section class="section" style="padding-top:0">
+  <div class="container">
+    <div class="benefit-grid">
+      <div class="benefit-text reveal">
+        <div class="sec-tag">What you get</div>
+        <h2>Every type of interview, fully covered.</h2>
+        <p>From "tell me about yourself" to distributed systems deep-dives, Meteor preps you for every question type — with feedback that actually makes you better, not just more anxious.</p>
+        <ul class="benefit-list">
+          <li><div class="b-check">✓</div> Role-specific question bank generated from the job description</li>
+          <li><div class="b-check">✓</div> Real-time answer feedback with scoring and improvement tips</li>
+          <li><div class="b-check">✓</div> Behavioral, technical, and system design coverage</li>
+          <li><div class="b-check">✓</div> Full mock interview mode with timed sessions</li>
+          <li><div class="b-check">✓</div> Session history so you can review and track progress</li>
+        </ul>
+        <a href="/auth/signup.html" class="btn btn-black btn-lg">Start practicing free →</a>
+      </div>
+      <div class="reveal d2">
+        <div class="qbank-card">
+          <div class="qbank-head">Question bank — Senior Frontend @ Stripe</div>
+          <div class="qbank-cat">
+            <div class="qbank-cat-label">Behavioral</div>
+            <div class="qbank-q active">Tell me about a time you led a project under pressure.</div>
+            <div class="qbank-q">Describe a disagreement with a coworker. How did you resolve it?</div>
+          </div>
+          <div class="qbank-cat">
+            <div class="qbank-cat-label">Technical</div>
+            <div class="qbank-q">What's the difference between useMemo and useCallback?</div>
+            <div class="qbank-q">How would you optimize a React app with 10,000 list items?</div>
+          </div>
+          <div class="qbank-cat" style="margin-bottom:0">
+            <div class="qbank-cat-label">System Design</div>
+            <div class="qbank-q">Design a real-time collaborative document editor.</div>
+          </div>
+          <div style="margin-top:16px;padding:10px 14px;background:var(--black);border-radius:9px;font-family:'Bricolage Grotesque',sans-serif;font-size:12px;font-weight:700;color:var(--lime);text-align:center;cursor:pointer">
+            Start mock interview →
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section" style="padding-top:0">
+  <div class="container">
+    <div class="cta-blk reveal">
+      <h2>Your next offer starts with better prep.</h2>
+      <p>Practice with Meteor tonight. Walk in ready tomorrow.</p>
+      <div class="cta-btns">
+        <a href="/auth/signup.html" class="btn btn-lg btn-cta-l">Start practicing free →</a>
+        <a href="/" class="btn btn-lg btn-cta-g">See all features</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <a href="/" class="logo"><div class="logo-mark"><svg width="12" height="16" viewBox="0 0 12 16" fill="none"><path d="M7.5 1L1 9.5H5.5L3.5 15L11 6.5H6.5L7.5 1Z" fill="#C5F135"/></svg></div> Meteor</a>
+        <p>The AI-powered job platform that auto-applies, optimizes your resume, and gets you hired faster.</p>
+      </div>
+      <div class="foot-col"><h4>Product</h4><ul>
+        <li><a href="/features/auto-apply.html">Auto-Apply</a></li>
+        <li><a href="/features/resume-builder.html">Resume Builder</a></li>
+        <li><a href="/features/ats-checker.html">ATS Checker</a></li>
+        <li><a href="/features/job-tracker.html">Job Tracker</a></li>
+        <li><a href="/features/interview-coach.html">Interview Coach</a></li>
+      </ul></div>
+      <div class="foot-col"><h4>Company</h4><ul>
+        <li><a href="#">About</a></li><li><a href="#">Blog</a></li><li><a href="#">Careers</a></li><li><a href="#">Press</a></li>
+      </ul></div>
+      <div class="foot-col"><h4>Legal</h4><ul>
+        <li><a href="#">Privacy Policy</a></li><li><a href="#">Terms of Service</a></li><li><a href="#">Cookie Policy</a></li><li><a href="#">Contact</a></li>
+      </ul></div>
+    </div>
+    <div class="foot-bot">
+      <span>© 2025 Meteor, Inc. All rights reserved.</span>
+      <div class="foot-soc"><a href="#">Twitter</a><a href="#">LinkedIn</a><a href="#">GitHub</a></div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const ro = new IntersectionObserver(e => e.forEach(x => { if(x.isIntersecting) x.target.classList.add('in'); }), {threshold:0.1,rootMargin:'0px 0px -40px 0px'});
+  document.querySelectorAll('.reveal').forEach(el => ro.observe(el));
+  document.querySelectorAll('.has-drop').forEach(item => {
+    const btn = item.querySelector('.nav-dd-btn');
+    if (!btn) return;
+    btn.addEventListener('click', e => { e.stopPropagation(); const o = item.classList.contains('open'); document.querySelectorAll('.has-drop.open').forEach(el => el.classList.remove('open')); if(!o) item.classList.add('open'); });
+  });
+  document.addEventListener('click', () => document.querySelectorAll('.has-drop.open').forEach(el => el.classList.remove('open')));
+</script>
+</body>
+</html>

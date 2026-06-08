@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Job Tracker — Meteor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/css/shared.css"/>
+  <style>
+  /* Kanban board */
+  .kb-board{display:flex;gap:12px;padding:20px;background:var(--bg-off);overflow-x:auto}
+  .kb-col{flex:1;min-width:180px;display:flex;flex-direction:column;gap:8px}
+  .kb-col-head{display:flex;align-items:center;justify-content:space-between;padding:0 4px;margin-bottom:4px}
+  .kb-col-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
+  .kb-col-count{font-size:10px;font-weight:700;width:18px;height:18px;border-radius:50%;background:var(--border);color:var(--muted);display:flex;align-items:center;justify-content:center}
+  .kb-col-count.active{background:#0d0d0d;color:var(--lime)}
+  .kb-card{background:var(--white);border:1.5px solid var(--border);border-radius:11px;padding:12px 13px;cursor:pointer;transition:box-shadow .18s,transform .18s}
+  .kb-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.1);transform:translateY(-2px)}
+  .kb-card-co{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:3px}
+  .kb-card-role{font-size:12px;font-weight:700;color:var(--black);line-height:1.3;margin-bottom:6px;font-family:'Bricolage Grotesque',sans-serif}
+  .kb-card-meta{display:flex;align-items:center;justify-content:space-between}
+  .kb-card-date{font-size:10px;color:var(--light)}
+  .kb-card-tag{font-size:9px;font-weight:700;padding:2px 7px;border-radius:100px;text-transform:uppercase;letter-spacing:.4px}
+  .kb-card-tag.applied{background:#dbeafe;color:#1d4ed8}
+  .kb-card-tag.screen{background:#fef9c3;color:#a16207}
+  .kb-card-tag.interview{background:#f3e8ff;color:#7e22ce}
+  .kb-card-tag.offer{background:#dcfce7;color:#15803d}
+  .kb-add{font-size:11px;color:var(--light);text-align:center;padding:10px;border:1.5px dashed var(--border);border-radius:9px;cursor:pointer;transition:border-color .18s,color .18s}
+  .kb-add:hover{border-color:var(--black);color:var(--black)}
+
+  /* Stats */
+  .jt-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--border);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:48px}
+  .jt-stat{background:var(--white);padding:28px 20px;text-align:center}
+  .jt-stat-val{font-family:'Bricolage Grotesque',sans-serif;font-size:38px;font-weight:800;letter-spacing:-0.03em;color:var(--black);margin-bottom:4px}
+  .jt-stat-val span{color:var(--lime)}
+  .jt-stat-lbl{font-size:13px;color:var(--muted)}
+
+  .sec-h{text-align:center;margin-bottom:48px}
+  .sec-h h2{font-family:'Bricolage Grotesque',sans-serif;font-size:clamp(26px,3.5vw,40px);font-weight:800;letter-spacing:-0.025em;color:var(--black);margin-bottom:10px}
+  .sec-h p{font-size:16px;color:var(--muted)}
+
+  /* reminder card in benefits */
+  .reminder-card{background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+  .reminder-head{font-family:'Bricolage Grotesque',sans-serif;font-size:14px;font-weight:700;color:var(--black);margin-bottom:14px}
+  .reminder-row{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;background:var(--bg-off);border:1.5px solid var(--border);margin-bottom:8px}
+  .reminder-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+  .reminder-text{flex:1}
+  .reminder-text strong{font-size:12px;font-weight:700;color:var(--black);display:block}
+  .reminder-text span{font-size:11px;color:var(--muted)}
+  .reminder-chip{font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px}
+
+  @media(max-width:768px){.jt-stats{grid-template-columns:1fr}.kb-board{flex-direction:column}}
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="container">
+    <div class="nav-inner">
+      <a href="/" class="logo">
+        <div class="logo-mark"><svg width="12" height="16" viewBox="0 0 12 16" fill="none"><path d="M7.5 1L1 9.5H5.5L3.5 15L11 6.5H6.5L7.5 1Z" fill="#C5F135"/></svg></div>
+        Meteor
+      </a>
+      <ul class="nav-list">
+        <li class="has-drop">
+          <button class="nav-dd-btn" aria-expanded="false">
+            Features
+            <svg class="nav-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M2 4.5L6 8.5L10 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="nav-drop">
+            <a href="/features/auto-apply.html" class="dd-item"><div class="dd-icon">⚡</div><div><div class="dd-name">Auto-Apply</div><div class="dd-desc">Apply to 200+ jobs automatically</div></div></a>
+            <a href="/features/resume-builder.html" class="dd-item"><div class="dd-icon">📄</div><div><div class="dd-name">Resume Builder</div><div class="dd-desc">AI-optimized resumes for every job</div></div></a>
+            <a href="/features/ats-checker.html" class="dd-item"><div class="dd-icon">✅</div><div><div class="dd-name">ATS Checker</div><div class="dd-desc">Beat the algorithm, score your resume</div></div></a>
+            <a href="/features/job-tracker.html" class="dd-item"><div class="dd-icon">📊</div><div><div class="dd-name">Job Tracker</div><div class="dd-desc">Kanban board for your applications</div></div></a>
+            <a href="/features/interview-coach.html" class="dd-item"><div class="dd-icon">🎤</div><div><div class="dd-name">Interview Coach</div><div class="dd-desc">AI-powered interview prep</div></div></a>
+          </div>
+        </li>
+        <li><a href="/#pricing">Pricing</a></li>
+        <li><a href="#">Blog</a></li>
+      </ul>
+      <div class="nav-btns">
+        <a href="/auth/signin.html" class="btn btn-ghost">Sign in</a>
+        <a href="/auth/signup.html" class="btn btn-black">Get started</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="feat-hero">
+  <div class="container">
+    <div class="feat-eyebrow la la1">
+      <span class="feat-eyebrow-dot"></span>
+      Job Tracker
+    </div>
+    <h1 class="la la2">Never lose track of <span class="hl">an application</span></h1>
+    <p class="la la3">Meteor automatically logs every application in a clean kanban board. Add notes, track deadlines, follow up at the right time, and see your full pipeline at a glance.</p>
+    <div class="feat-hero-btns la la4">
+      <a href="/auth/signup.html" class="btn btn-black btn-lg">Track my applications →</a>
+      <a href="#how" class="btn btn-ghost btn-lg">See a demo</a>
+    </div>
+
+    <!-- Kanban mockup -->
+    <div class="mockup-frame la la5">
+      <div class="mockup-bar">
+        <div class="mockup-dots">
+          <div class="mockup-dot" style="background:#ff5f57"></div>
+          <div class="mockup-dot" style="background:#febc2e"></div>
+          <div class="mockup-dot" style="background:#28c840"></div>
+        </div>
+        <span class="mockup-title">Meteor — Job Tracker</span>
+      </div>
+      <div class="kb-board">
+        <!-- Applied -->
+        <div class="kb-col">
+          <div class="kb-col-head">
+            <span class="kb-col-label">Applied</span>
+            <span class="kb-col-count active">3</span>
+          </div>
+          <div class="kb-card">
+            <div class="kb-card-co">Vercel</div>
+            <div class="kb-card-role">Senior Frontend Engineer</div>
+            <div class="kb-card-meta">
+              <span class="kb-card-date">Jun 2</span>
+              <span class="kb-card-tag applied">Applied</span>
+            </div>
+          </div>
+          <div class="kb-card">
+            <div class="kb-card-co">Figma</div>
+            <div class="kb-card-role">Product Engineer</div>
+            <div class="kb-card-meta">
+              <span class="kb-card-date">Jun 4</span>
+              <span class="kb-card-tag applied">Applied</span>
+            </div>
+          </div>
+          <div class="kb-add">+ Add application</div>
+        </div>
+        <!-- Screening -->
+        <div class="kb-col">
+          <div class="kb-col-head">
+            <span class="kb-col-label">Screening</span>
+            <span class="kb-col-count active">2</span>
+          </div>
+          <div class="kb-card">
+            <div class="kb-card-co">Linear</div>
+            <div class="kb-card-role">Software Engineer II</div>
+            <div class="kb-card-meta">
+              <span class="kb-card-date">May 30</span>
+              <span class="kb-card-tag screen">Screening</span>
+            </div>
+          </div>
+          <div class="kb-card">
+            <div class="kb-card-co">Notion</div>
+            <div class="kb-card-role">Staff Engineer</div>
+            <div class="kb-card-meta">
+              <span class="kb-card-date">May 28</span>
+              <span class="kb-card-tag screen">Screening</span>
+            </div>
+          </div>
+        </div>
+        <!-- Interview -->
+        <div class="kb-col">
+          <div class="kb-col-head">
+            <span class="kb-col-label">Interview</span>
+            <span class="kb-col-count active">2</span>
+          </div>
+          <div class="kb-card">
+            <div class="kb-card-co">Stripe</div>
+            <div class="kb-card-role">Frontend Engineer</div>
+            <div class="kb-card-meta">
+              <span class="kb-card-date">Jun 6</span>
+              <span class="kb-card-tag interview">Round 2</span>
+            </div>
+          </div>
+          <div class="kb-card">
+            <div class="kb-card-co">Loom</div>
+            <div class="kb-card-role">React Developer</div>
+            <div class="kb-card-meta">
+              <span class="kb-card-date">Jun 8</span>
+              <span class="kb-card-tag interview">Round 1</span>
+            </div>
+          </div>
+        </div>
+        <!-- Offer -->
+        <div class="kb-col">
+          <div class="kb-col-head">
+            <span class="kb-col-label">Offer</span>
+            <span class="kb-col-count active">1</span>
+          </div>
+          <div class="kb-card" style="border-color:#bbf7d0;background:#f0fdf4">
+            <div class="kb-card-co">Clerk</div>
+            <div class="kb-card-role">Senior Engineer</div>
+            <div class="kb-card-meta">
+              <span class="kb-card-date">Jun 5</span>
+              <span class="kb-card-tag offer">Offer!</span>
+            </div>
+          </div>
+          <div class="kb-add">+ Add offer</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="section" style="padding-top:0">
+  <div class="container">
+    <div class="jt-stats reveal">
+      <div class="jt-stat"><div class="jt-stat-val">1<span> place</span></div><div class="jt-stat-lbl">For all your applications</div></div>
+      <div class="jt-stat"><div class="jt-stat-val">40<span>%</span></div><div class="jt-stat-lbl">Faster follow-ups with reminders</div></div>
+      <div class="jt-stat"><div class="jt-stat-val">4<span>×</span></div><div class="jt-stat-lbl">More offers with active tracking</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how" style="padding-top:0">
+  <div class="container">
+    <div class="sec-h reveal">
+      <h2>How Job Tracker works</h2>
+      <p>Your entire job search pipeline, organized automatically.</p>
+    </div>
+    <div class="how-grid">
+      <div class="how-step reveal d1">
+        <div class="how-num">1</div>
+        <h3>Applications logged automatically</h3>
+        <p>Every job Meteor applies to is instantly added to your board. No manual entry. Each card includes the role, company, date applied, and a direct link to the listing.</p>
+      </div>
+      <div class="how-step reveal d2">
+        <div class="how-num">2</div>
+        <h3>Move cards through stages</h3>
+        <p>Drag cards from Applied → Screening → Interview → Offer as your search progresses. Add notes, contacts, and deadlines to each card so nothing slips through the cracks.</p>
+      </div>
+      <div class="how-step reveal d3">
+        <div class="how-num">3</div>
+        <h3>Smart follow-up reminders</h3>
+        <p>Meteor alerts you when it's been 5+ days without a response and suggests the perfect follow-up message. Follow up more, hear back more.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BENEFITS -->
+<section class="section" style="padding-top:0">
+  <div class="container">
+    <div class="benefit-grid">
+      <div class="benefit-text reveal">
+        <div class="sec-tag">Everything in one place</div>
+        <h2>Your entire pipeline, always organized.</h2>
+        <p>When you're applying to hundreds of roles, chaos is the enemy. Meteor's tracker gives you total visibility — so you always know what needs attention and when to follow up.</p>
+        <ul class="benefit-list">
+          <li><div class="b-check">✓</div> Auto-logs every application from Auto-Apply instantly</li>
+          <li><div class="b-check">✓</div> Custom kanban stages that match your workflow</li>
+          <li><div class="b-check">✓</div> Deadline reminders and smart follow-up nudges</li>
+          <li><div class="b-check">✓</div> Notes, contacts, and salary details per application</li>
+          <li><div class="b-check">✓</div> Analytics view — see where you're winning and losing</li>
+        </ul>
+        <a href="/auth/signup.html" class="btn btn-black btn-lg">Track my applications →</a>
+      </div>
+      <div class="reveal d2">
+        <div class="reminder-card">
+          <div class="reminder-head">Follow-up reminders</div>
+          <div class="reminder-row">
+            <div class="reminder-dot" style="background:#f59e0b"></div>
+            <div class="reminder-text">
+              <strong>Stripe — Frontend Engineer</strong>
+              <span>No response in 6 days · Applied Jun 1</span>
+            </div>
+            <span class="reminder-chip" style="background:#fffbeb;color:#92400e;border:1px solid #fde68a">Follow up</span>
+          </div>
+          <div class="reminder-row">
+            <div class="reminder-dot" style="background:#ef4444"></div>
+            <div class="reminder-text">
+              <strong>Notion — Staff Engineer</strong>
+              <span>Interview tomorrow at 2pm</span>
+            </div>
+            <span class="reminder-chip" style="background:#fef2f2;color:#991b1b;border:1px solid #fecaca">Prep now</span>
+          </div>
+          <div class="reminder-row">
+            <div class="reminder-dot" style="background:#22c55e"></div>
+            <div class="reminder-text">
+              <strong>Clerk — Senior Engineer</strong>
+              <span>Offer received · Expires Jun 12</span>
+            </div>
+            <span class="reminder-chip" style="background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0">Decide</span>
+          </div>
+          <div class="reminder-row">
+            <div class="reminder-dot" style="background:#6b7280"></div>
+            <div class="reminder-text">
+              <strong>Linear — Software Engineer II</strong>
+              <span>Awaiting recruiter screen · Jun 2</span>
+            </div>
+            <span class="reminder-chip" style="background:var(--bg-off);color:var(--muted);border:1px solid var(--border)">Waiting</span>
+          </div>
+          <div style="margin-top:14px;padding:10px 14px;background:var(--black);border-radius:9px;font-family:'Bricolage Grotesque',sans-serif;font-size:12px;font-weight:700;color:var(--lime);text-align:center;cursor:pointer">
+            View full pipeline →
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section" style="padding-top:0">
+  <div class="container">
+    <div class="cta-blk reveal">
+      <h2>Every application, accounted for.</h2>
+      <p>Stop losing track. Start closing more offers with Meteor.</p>
+      <div class="cta-btns">
+        <a href="/auth/signup.html" class="btn btn-lg btn-cta-l">Track my applications →</a>
+        <a href="/" class="btn btn-lg btn-cta-g">See all features</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <a href="/" class="logo"><div class="logo-mark"><svg width="12" height="16" viewBox="0 0 12 16" fill="none"><path d="M7.5 1L1 9.5H5.5L3.5 15L11 6.5H6.5L7.5 1Z" fill="#C5F135"/></svg></div> Meteor</a>
+        <p>The AI-powered job platform that auto-applies, optimizes your resume, and gets you hired faster.</p>
+      </div>
+      <div class="foot-col"><h4>Product</h4><ul>
+        <li><a href="/features/auto-apply.html">Auto-Apply</a></li>
+        <li><a href="/features/resume-builder.html">Resume Builder</a></li>
+        <li><a href="/features/ats-checker.html">ATS Checker</a></li>
+        <li><a href="/features/job-tracker.html">Job Tracker</a></li>
+        <li><a href="/features/interview-coach.html">Interview Coach</a></li>
+      </ul></div>
+      <div class="foot-col"><h4>Company</h4><ul>
+        <li><a href="#">About</a></li><li><a href="#">Blog</a></li><li><a href="#">Careers</a></li><li><a href="#">Press</a></li>
+      </ul></div>
+      <div class="foot-col"><h4>Legal</h4><ul>
+        <li><a href="#">Privacy Policy</a></li><li><a href="#">Terms of Service</a></li><li><a href="#">Cookie Policy</a></li><li><a href="#">Contact</a></li>
+      </ul></div>
+    </div>
+    <div class="foot-bot">
+      <span>© 2025 Meteor, Inc. All rights reserved.</span>
+      <div class="foot-soc"><a href="#">Twitter</a><a href="#">LinkedIn</a><a href="#">GitHub</a></div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const ro = new IntersectionObserver(e => e.forEach(x => { if(x.isIntersecting) x.target.classList.add('in'); }), {threshold:0.1,rootMargin:'0px 0px -40px 0px'});
+  document.querySelectorAll('.reveal').forEach(el => ro.observe(el));
+  document.querySelectorAll('.has-drop').forEach(item => {
+    const btn = item.querySelector('.nav-dd-btn');
+    if (!btn) return;
+    btn.addEventListener('click', e => { e.stopPropagation(); const o = item.classList.contains('open'); document.querySelectorAll('.has-drop.open').forEach(el => el.classList.remove('open')); if(!o) item.classList.add('open'); });
+  });
+  document.addEventListener('click', () => document.querySelectorAll('.has-drop.open').forEach(el => el.classList.remove('open')));
+</script>
+</body>
+</html>

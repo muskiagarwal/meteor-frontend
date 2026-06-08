@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Resume Builder — Meteor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/css/shared.css"/>
+  <style>
+  /* Resume mockup */
+  .resume-card{background:var(--white);border-radius:14px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,.1);font-family:'DM Sans',sans-serif;padding:28px 28px 24px}
+  .res-name{font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:800;color:var(--black);letter-spacing:-0.02em}
+  .res-role{font-size:12px;color:var(--muted);margin-top:2px;margin-bottom:14px}
+  .res-contact{display:flex;gap:14px;font-size:11px;color:var(--light);margin-bottom:18px;padding-bottom:14px;border-bottom:1.5px solid var(--border)}
+  .res-section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--black);margin-bottom:8px;margin-top:14px}
+  .res-line{height:7px;border-radius:100px;background:var(--border);margin-bottom:6px}
+  .res-line.ai{background:linear-gradient(90deg,#e8fba0 0%,#C5F135 60%,#e8fba0 100%);background-size:200% 100%;animation:shimmer 2.2s linear infinite}
+  .res-line.full{width:100%}
+  .res-line.lg{width:86%}
+  .res-line.md{width:68%}
+  .res-line.sm{width:52%}
+  .res-skill-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+  .res-skill{font-size:11px;font-weight:600;padding:3px 9px;border-radius:100px;background:var(--bg-off);border:1.5px solid var(--border);color:var(--text)}
+  .res-skill.ai{background:#eefb9e;border-color:#C5F135;color:#3a5200}
+  .res-ai-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;color:#3a5200;background:#eefb9e;border:1.5px solid #C5F135;border-radius:100px;padding:2px 9px;margin-top:14px}
+  @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+  /* Stats override to match aa-stats style */
+  .rb-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--border);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:48px}
+  .rb-stat{background:var(--white);padding:28px 20px;text-align:center}
+  .rb-stat-val{font-family:'Bricolage Grotesque',sans-serif;font-size:38px;font-weight:800;letter-spacing:-0.03em;color:var(--black);margin-bottom:4px}
+  .rb-stat-val span{color:var(--lime)}
+  .rb-stat-lbl{font-size:13px;color:var(--muted)}
+
+  /* Template pills */
+  .tpl-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
+  .tpl-pill{font-size:11px;font-weight:600;padding:4px 11px;border-radius:100px;border:1.5px solid var(--border);color:var(--muted);background:var(--white)}
+  .tpl-pill.active{background:var(--black);border-color:var(--black);color:var(--lime)}
+
+  .sec-h{text-align:center;margin-bottom:48px}
+  .sec-h h2{font-family:'Bricolage Grotesque',sans-serif;font-size:clamp(26px,3.5vw,40px);font-weight:800;letter-spacing:-0.025em;color:var(--black);margin-bottom:10px}
+  .sec-h p{font-size:16px;color:var(--muted)}
+
+  @media(max-width:768px){.rb-stats{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="container">
+    <div class="nav-inner">
+      <a href="/" class="logo">
+        <div class="logo-mark"><svg width="12" height="16" viewBox="0 0 12 16" fill="none"><path d="M7.5 1L1 9.5H5.5L3.5 15L11 6.5H6.5L7.5 1Z" fill="#C5F135"/></svg></div>
+        Meteor
+      </a>
+      <ul class="nav-list">
+        <li class="has-drop">
+          <button class="nav-dd-btn" aria-expanded="false">
+            Features
+            <svg class="nav-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M2 4.5L6 8.5L10 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="nav-drop">
+            <a href="/features/auto-apply.html" class="dd-item"><div class="dd-icon">⚡</div><div><div class="dd-name">Auto-Apply</div><div class="dd-desc">Apply to 200+ jobs automatically</div></div></a>
+            <a href="/features/resume-builder.html" class="dd-item"><div class="dd-icon">📄</div><div><div class="dd-name">Resume Builder</div><div class="dd-desc">AI-optimized resumes for every job</div></div></a>
+            <a href="/features/ats-checker.html" class="dd-item"><div class="dd-icon">✅</div><div><div class="dd-name">ATS Checker</div><div class="dd-desc">Beat the algorithm, score your resume</div></div></a>
+            <a href="/features/job-tracker.html" class="dd-item"><div class="dd-icon">📊</div><div><div class="dd-name">Job Tracker</div><div class="dd-desc">Kanban board for your applications</div></div></a>
+            <a href="/features/interview-coach.html" class="dd-item"><div class="dd-icon">🎤</div><div><div class="dd-name">Interview Coach</div><div class="dd-desc">AI-powered interview prep</div></div></a>
+          </div>
+        </li>
+        <li><a href="/#pricing">Pricing</a></li>
+        <li><a href="#">Blog</a></li>
+      </ul>
+      <div class="nav-btns">
+        <a href="/auth/signin.html" class="btn btn-ghost">Sign in</a>
+        <a href="/auth/signup.html" class="btn btn-black">Get started</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="feat-hero">
+  <div class="container">
+    <div class="feat-eyebrow la la1">
+      <span class="feat-eyebrow-dot"></span>
+      Resume Builder
+    </div>
+    <h1 class="la la2">Resumes that actually <span class="hl">get callbacks</span></h1>
+    <p class="la la3">Meteor's AI analyzes your experience and the job description, then builds a tailored resume that passes ATS filters and impresses hiring managers — in seconds.</p>
+    <div class="feat-hero-btns la la4">
+      <a href="/auth/signup.html" class="btn btn-black btn-lg">Build my resume free →</a>
+      <a href="#how" class="btn btn-ghost btn-lg">See an example</a>
+    </div>
+
+    <!-- Resume mockup -->
+    <div class="mockup-frame la la5">
+      <div class="mockup-bar">
+        <div class="mockup-dots">
+          <div class="mockup-dot" style="background:#ff5f57"></div>
+          <div class="mockup-dot" style="background:#febc2e"></div>
+          <div class="mockup-dot" style="background:#28c840"></div>
+        </div>
+        <span class="mockup-title">Meteor — Resume Builder</span>
+      </div>
+      <div style="padding:24px;background:var(--bg-off);display:flex;gap:20px;align-items:flex-start">
+        <!-- Left: job input -->
+        <div style="flex:1;background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:18px">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:10px">Job Description</div>
+          <div style="font-size:12px;color:var(--text);line-height:1.6;background:var(--bg-off);border:1px solid var(--border);border-radius:8px;padding:12px">
+            Senior Frontend Engineer — React, TypeScript, Node.js. 5+ years experience required. Strong emphasis on system design and performance optimization...
+          </div>
+          <div style="margin-top:14px;padding:10px 14px;background:var(--black);border-radius:9px;font-family:'Bricolage Grotesque',sans-serif;font-size:12px;font-weight:700;color:var(--lime);text-align:center;cursor:pointer">
+            ✦ Tailor my resume →
+          </div>
+        </div>
+        <!-- Right: resume output -->
+        <div style="flex:1.2">
+          <div class="resume-card">
+            <div class="res-name">Alex Johnson</div>
+            <div class="res-role">Senior Frontend Engineer</div>
+            <div class="res-contact">
+              <span>alex@email.com</span>
+              <span>github.com/alexj</span>
+              <span>San Francisco, CA</span>
+            </div>
+            <div class="res-section-label">Experience</div>
+            <div class="res-line ai full"></div>
+            <div class="res-line ai lg"></div>
+            <div class="res-line md"></div>
+            <div style="margin-top:10px">
+              <div class="res-line full"></div>
+              <div class="res-line ai lg"></div>
+              <div class="res-line sm"></div>
+            </div>
+            <div class="res-section-label">Skills</div>
+            <div class="res-skill-row">
+              <span class="res-skill ai">React</span>
+              <span class="res-skill ai">TypeScript</span>
+              <span class="res-skill ai">Node.js</span>
+              <span class="res-skill">GraphQL</span>
+              <span class="res-skill ai">System Design</span>
+              <span class="res-skill">AWS</span>
+            </div>
+            <div class="res-section-label">Education</div>
+            <div class="res-line lg"></div>
+            <div class="res-line sm"></div>
+            <div class="res-ai-badge">✦ AI-enhanced for this role</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="section" style="padding-top:0">
+  <div class="container">
+    <div class="rb-stats reveal">
+      <div class="rb-stat"><div class="rb-stat-val">3<span>×</span></div><div class="rb-stat-lbl">More callbacks than generic resumes</div></div>
+      <div class="rb-stat"><div class="rb-stat-val">8<span>s</span></div><div class="rb-stat-lbl">To generate per job description</div></div>
+      <div class="rb-stat"><div class="rb-stat-val">97<span>%</span></div><div class="rb-stat-lbl">ATS pass rate</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how" style="padding-top:0">
+  <div class="container">
+    <div class="sec-h reveal">
+      <h2>How Resume Builder works</h2>
+      <p>From upload to tailored resume in three simple steps.</p>
+    </div>
+    <div class="how-grid">
+      <div class="how-step reveal d1">
+        <div class="how-num">1</div>
+        <h3>Upload your base resume</h3>
+        <p>Drop in your existing resume or start from scratch with one of Meteor's professionally designed templates. We parse everything automatically.</p>
+      </div>
+      <div class="how-step reveal d2">
+        <div class="how-num">2</div>
+        <h3>Paste a job description</h3>
+        <p>Copy the job description from any job board. Meteor extracts the key requirements, preferred skills, and language the company uses.</p>
+      </div>
+      <div class="how-step reveal d3">
+        <div class="how-num">3</div>
+        <h3>Meteor tailors and optimizes</h3>
+        <p>AI rewrites your bullet points, injects relevant keywords, reorders your sections for impact, and exports a clean, ATS-safe PDF — ready to send.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BENEFITS -->
+<section class="section" style="padding-top:0">
+  <div class="container">
+    <div class="benefit-grid">
+      <div class="benefit-text reveal">
+        <div class="sec-tag">What you get</div>
+        <h2>Every resume, optimized for the exact role.</h2>
+        <p>One resume doesn't fit all. Meteor builds a distinct, tailored version for every application — so you always put your best foot forward without spending hours rewriting.</p>
+        <ul class="benefit-list">
+          <li><div class="b-check">✓</div> AI-tailored content that mirrors the job description's language</li>
+          <li><div class="b-check">✓</div> Automatic keyword injection to pass ATS filters</li>
+          <li><div class="b-check">✓</div> Clean, recruiter-friendly formatting that renders perfectly</li>
+          <li><div class="b-check">✓</div> Multiple professional templates — modern, classic, minimal</li>
+          <li><div class="b-check">✓</div> One-click PDF export, always ATS-safe</li>
+        </ul>
+        <a href="/auth/signup.html" class="btn btn-black btn-lg">Build my resume free →</a>
+      </div>
+      <div class="reveal d2">
+        <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
+          <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:14px;font-weight:700;color:var(--black);margin-bottom:16px">Choose a template</div>
+          <div class="tpl-row" style="margin-bottom:20px">
+            <span class="tpl-pill active">Modern</span>
+            <span class="tpl-pill">Classic</span>
+            <span class="tpl-pill">Minimal</span>
+            <span class="tpl-pill">Executive</span>
+          </div>
+          <!-- Mini resume preview -->
+          <div style="border:1.5px solid var(--border);border-radius:10px;overflow:hidden">
+            <div style="background:#0d0d0d;padding:14px 16px">
+              <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:14px;font-weight:800;color:#fff">Alex Johnson</div>
+              <div style="font-size:11px;color:var(--lime);margin-top:2px">Senior Frontend Engineer</div>
+            </div>
+            <div style="padding:14px 16px;background:var(--white)">
+              <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:6px">Experience</div>
+              <div style="height:6px;border-radius:100px;background:#e8fba0;margin-bottom:5px;width:100%"></div>
+              <div style="height:6px;border-radius:100px;background:var(--border);margin-bottom:5px;width:80%"></div>
+              <div style="height:6px;border-radius:100px;background:var(--border);width:60%;margin-bottom:10px"></div>
+              <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:6px">Skills</div>
+              <div style="display:flex;gap:5px;flex-wrap:wrap">
+                <span style="font-size:9px;padding:2px 7px;background:#eefb9e;border-radius:100px;color:#3a5200;font-weight:600">React</span>
+                <span style="font-size:9px;padding:2px 7px;background:#eefb9e;border-radius:100px;color:#3a5200;font-weight:600">TypeScript</span>
+                <span style="font-size:9px;padding:2px 7px;background:var(--bg-off);border-radius:100px;color:var(--muted);font-weight:600">GraphQL</span>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:14px;padding:10px 14px;background:var(--lime);border-radius:9px;font-family:'Bricolage Grotesque',sans-serif;font-size:12px;font-weight:700;color:var(--black);text-align:center;cursor:pointer">
+            Export as PDF →
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section" style="padding-top:0">
+  <div class="container">
+    <div class="cta-blk reveal">
+      <h2>Your next callback is one resume away.</h2>
+      <p>Join 50,000+ job seekers who landed interviews faster with Meteor.</p>
+      <div class="cta-btns">
+        <a href="/auth/signup.html" class="btn btn-lg btn-cta-l">Build my resume free →</a>
+        <a href="/" class="btn btn-lg btn-cta-g">See all features</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <a href="/" class="logo"><div class="logo-mark"><svg width="12" height="16" viewBox="0 0 12 16" fill="none"><path d="M7.5 1L1 9.5H5.5L3.5 15L11 6.5H6.5L7.5 1Z" fill="#C5F135"/></svg></div> Meteor</a>
+        <p>The AI-powered job platform that auto-applies, optimizes your resume, and gets you hired faster.</p>
+      </div>
+      <div class="foot-col"><h4>Product</h4><ul>
+        <li><a href="/features/auto-apply.html">Auto-Apply</a></li>
+        <li><a href="/features/resume-builder.html">Resume Builder</a></li>
+        <li><a href="/features/ats-checker.html">ATS Checker</a></li>
+        <li><a href="/features/job-tracker.html">Job Tracker</a></li>
+        <li><a href="/features/interview-coach.html">Interview Coach</a></li>
+      </ul></div>
+      <div class="foot-col"><h4>Company</h4><ul>
+        <li><a href="#">About</a></li><li><a href="#">Blog</a></li><li><a href="#">Careers</a></li><li><a href="#">Press</a></li>
+      </ul></div>
+      <div class="foot-col"><h4>Legal</h4><ul>
+        <li><a href="#">Privacy Policy</a></li><li><a href="#">Terms of Service</a></li><li><a href="#">Cookie Policy</a></li><li><a href="#">Contact</a></li>
+      </ul></div>
+    </div>
+    <div class="foot-bot">
+      <span>© 2025 Meteor, Inc. All rights reserved.</span>
+      <div class="foot-soc"><a href="#">Twitter</a><a href="#">LinkedIn</a><a href="#">GitHub</a></div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const ro = new IntersectionObserver(e => e.forEach(x => { if(x.isIntersecting) x.target.classList.add('in'); }), {threshold:0.1,rootMargin:'0px 0px -40px 0px'});
+  document.querySelectorAll('.reveal').forEach(el => ro.observe(el));
+  document.querySelectorAll('.has-drop').forEach(item => {
+    const btn = item.querySelector('.nav-dd-btn');
+    if (!btn) return;
+    btn.addEventListener('click', e => { e.stopPropagation(); const o = item.classList.contains('open'); document.querySelectorAll('.has-drop.open').forEach(el => el.classList.remove('open')); if(!o) item.classList.add('open'); });
+  });
+  document.addEventListener('click', () => document.querySelectorAll('.has-drop.open').forEach(el => el.classList.remove('open')));
+</script>
+</body>
+</html>

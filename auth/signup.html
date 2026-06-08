@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Create your account — Meteor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet"/>
+  <style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --lime:#C5F135;--lime-d:#a8d020;--black:#0d0d0d;--dark:#111827;
+    --text:#374151;--muted:#6b7280;--light:#9ca3af;
+    --border:#e5e7eb;--bg-off:#f9fafb;--white:#ffffff;
+  }
+  html{height:100%}
+  body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg-off);color:var(--dark);-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column}
+  a{text-decoration:none;color:inherit}
+  h1,h2,h3{font-family:'Bricolage Grotesque',sans-serif}
+
+  /* Top bar */
+  .auth-top{padding:20px 28px;display:flex;align-items:center;justify-content:space-between}
+  .logo{display:flex;align-items:center;gap:8px;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:17px;color:var(--black)}
+  .logo-mark{width:30px;height:30px;border-radius:8px;background:var(--black);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .auth-top-link{font-size:14px;color:var(--muted)}
+  .auth-top-link a{color:var(--black);font-weight:600}
+  .auth-top-link a:hover{text-decoration:underline}
+
+  /* Main layout */
+  .auth-body{flex:1;display:flex;align-items:center;justify-content:center;padding:20px 20px 48px}
+  .auth-card{width:100%;max-width:420px}
+  .auth-head{margin-bottom:28px;text-align:center}
+  .auth-head h1{font-size:28px;font-weight:800;letter-spacing:-0.025em;color:var(--black);margin-bottom:6px}
+  .auth-head p{font-size:14px;color:var(--muted);line-height:1.6}
+
+  /* Google button */
+  .btn-google{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:11px 20px;border:1.5px solid var(--border);border-radius:10px;background:var(--white);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:var(--dark);cursor:pointer;transition:background .18s,border-color .18s,box-shadow .18s;margin-bottom:20px}
+  .btn-google:hover{background:var(--bg-off);border-color:#d1d5db;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+  .g-icon{width:18px;height:18px;flex-shrink:0}
+
+  /* Divider */
+  .or-divider{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+  .or-divider::before,.or-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+  .or-divider span{font-size:12px;color:var(--light);white-space:nowrap;font-weight:500}
+
+  /* Form */
+  .form-row{margin-bottom:14px}
+  .form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+  label{display:block;font-size:13px;font-weight:600;color:var(--dark);margin-bottom:5px}
+  input[type=text],input[type=email],input[type=password]{width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--dark);background:var(--white);outline:none;transition:border-color .18s,box-shadow .18s}
+  input:focus{border-color:var(--black);box-shadow:0 0 0 3px rgba(13,13,13,.07)}
+  input::placeholder{color:var(--light)}
+
+  .btn-submit{width:100%;padding:12px;border:none;border-radius:10px;background:var(--black);color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:background .2s,transform .15s,box-shadow .2s;margin-top:6px}
+  .btn-submit:hover{background:#222;transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,.2)}
+
+  .auth-terms{font-size:12px;color:var(--light);text-align:center;margin-top:16px;line-height:1.6}
+  .auth-terms a{color:var(--muted);border-bottom:1px solid var(--border)}
+  .auth-terms a:hover{color:var(--dark)}
+
+  /* Sign-in prompt */
+  .auth-switch{text-align:center;margin-top:22px;font-size:13px;color:var(--muted)}
+  .auth-switch a{color:var(--black);font-weight:600}
+  .auth-switch a:hover{text-decoration:underline}
+
+  /* Feature sidebar visible on wide screens */
+  @media(min-width:900px){
+    .auth-body{gap:60px}
+    .auth-side{flex:0 0 340px;padding-top:20px}
+    .side-head{font-family:'Bricolage Grotesque',sans-serif;font-size:22px;font-weight:800;letter-spacing:-0.025em;color:var(--black);line-height:1.2;margin-bottom:20px}
+    .side-head span{position:relative;display:inline}
+    .side-head span::after{content:'';position:absolute;left:-2px;right:-2px;bottom:2px;height:34%;background:var(--lime);z-index:-1;border-radius:3px}
+    .side-feat{display:flex;flex-direction:column;gap:14px}
+    .sf-item{display:flex;align-items:flex-start;gap:12px;padding:14px;border:1.5px solid var(--border);border-radius:13px;background:var(--white)}
+    .sf-ico{width:34px;height:34px;border-radius:9px;background:var(--black);color:var(--lime);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+    .sf-name{font-size:13px;font-weight:700;color:var(--black);margin-bottom:2px}
+    .sf-desc{font-size:12px;color:var(--muted);line-height:1.4}
+  }
+  @media(max-width:899px){.auth-side{display:none}}
+  @media(max-width:480px){.form-row-2{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+
+<div class="auth-top">
+  <a href="/" class="logo">
+    <div class="logo-mark">
+      <svg width="12" height="16" viewBox="0 0 12 16" fill="none">
+        <path d="M7.5 1L1 9.5H5.5L3.5 15L11 6.5H6.5L7.5 1Z" fill="#C5F135"/>
+      </svg>
+    </div>
+    Meteor
+  </a>
+  <span class="auth-top-link">Already have an account? <a href="/auth/signin.html">Sign in</a></span>
+</div>
+
+<div class="auth-body">
+
+  <!-- Side panel -->
+  <aside class="auth-side">
+    <p class="side-head">Land your dream job <span>10× faster</span> with AI</p>
+    <div class="side-feat">
+      <div class="sf-item">
+        <div class="sf-ico">⚡</div>
+        <div><div class="sf-name">Auto-Apply</div><div class="sf-desc">Apply to hundreds of matched jobs while you sleep</div></div>
+      </div>
+      <div class="sf-item">
+        <div class="sf-ico">📄</div>
+        <div><div class="sf-name">Resume Builder</div><div class="sf-desc">AI-optimized resumes tailored to each job</div></div>
+      </div>
+      <div class="sf-item">
+        <div class="sf-ico">✅</div>
+        <div><div class="sf-name">ATS Checker</div><div class="sf-desc">Beat the algorithm before you even apply</div></div>
+      </div>
+      <div class="sf-item">
+        <div class="sf-ico">🎤</div>
+        <div><div class="sf-name">Interview Coach</div><div class="sf-desc">Walk in confident with AI-powered prep</div></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Auth card -->
+  <div class="auth-card">
+    <div class="auth-head">
+      <h1>Create your account</h1>
+      <p>Start applying smarter in under 2 minutes.</p>
+    </div>
+
+    <button class="btn-google" type="button">
+      <svg class="g-icon" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 01-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
+        <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/>
+        <path d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+        <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+      </svg>
+      Continue with Google
+    </button>
+
+    <div class="or-divider"><span>or continue with email</span></div>
+
+    <form onsubmit="return false">
+      <div class="form-row-2">
+        <div>
+          <label for="fname">First name</label>
+          <input type="text" id="fname" placeholder="Alex"/>
+        </div>
+        <div>
+          <label for="lname">Last name</label>
+          <input type="text" id="lname" placeholder="Johnson"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <label for="email">Work email</label>
+        <input type="email" id="email" placeholder="alex@company.com"/>
+      </div>
+      <div class="form-row">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="At least 8 characters"/>
+      </div>
+      <button type="submit" class="btn-submit">Create account →</button>
+    </form>
+
+    <p class="auth-terms">
+      By creating an account, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+    </p>
+
+    <p class="auth-switch">Already have an account? <a href="/auth/signin.html">Sign in</a></p>
+  </div>
+</div>
+
+</body>
+</html>

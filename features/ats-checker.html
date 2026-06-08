@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ATS Checker — Meteor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/css/shared.css"/>
+  <style>
+  /* ATS score circle */
+  .ats-panel{background:var(--white);border-radius:14px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,.1)}
+  .ats-panel-head{padding:13px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+  .ats-panel-title{font-family:'Bricolage Grotesque',sans-serif;font-size:13px;font-weight:700;color:var(--black)}
+  .ats-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:100px;background:#dcfce7;color:#15803d;border:1px solid #bbf7d0}
+  .ats-body{padding:20px 20px 16px}
+  .score-wrap{display:flex;align-items:center;gap:24px;margin-bottom:20px}
+  .score-circle{position:relative;width:80px;height:80px;flex-shrink:0}
+  .score-circle svg{transform:rotate(-90deg)}
+  .score-circle .track{fill:none;stroke:var(--border);stroke-width:6}
+  .score-circle .fill{fill:none;stroke:var(--lime);stroke-width:6;stroke-linecap:round;stroke-dasharray:220;stroke-dashoffset:28;transition:stroke-dashoffset 1s cubic-bezier(.16,1,.3,1)}
+  .score-num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Bricolage Grotesque',sans-serif;font-size:22px;font-weight:800;color:var(--black);line-height:1}
+  .score-num small{font-size:9px;color:var(--muted);font-family:'DM Sans',sans-serif;font-weight:500;margin-top:2px}
+  .score-meta{flex:1}
+  .score-meta p{font-size:12px;color:var(--muted);line-height:1.55}
+  .score-meta strong{font-weight:700;color:var(--black)}
+  /* Keyword bars */
+  .kw-list{display:flex;flex-direction:column;gap:9px;margin-bottom:16px}
+  .kw-row{display:flex;flex-direction:column;gap:4px}
+  .kw-top{display:flex;justify-content:space-between;font-size:11px}
+  .kw-name{font-weight:600;color:var(--text)}
+  .kw-pct{color:var(--muted)}
+  .kw-track{height:6px;border-radius:100px;background:var(--border);overflow:hidden}
+  .kw-fill{height:100%;border-radius:100px;background:var(--lime)}
+  .kw-fill.warn{background:#fbbf24}
+  .kw-fill.low{background:#f87171}
+  /* Tip box */
+  .ats-tip{display:flex;align-items:flex-start;gap:10px;background:#fffbeb;border:1.5px solid #fde68a;border-radius:10px;padding:11px 13px}
+  .ats-tip-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+  .ats-tip-text{font-size:11px;color:#92400e;line-height:1.55}
+  .ats-tip-text strong{font-weight:700}
+
+  /* Stats */
+  .ats-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--border);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:48px}
+  .ats-stat{background:var(--white);padding:28px 20px;text-align:center}
+  .ats-stat-val{font-family:'Bricolage Grotesque',sans-serif;font-size:38px;font-weight:800;letter-spacing:-0.03em;color:var(--black);margin-bottom:4px}
+  .ats-stat-val span{color:var(--lime)}
+  .ats-stat-lbl{font-size:13px;color:var(--muted)}
+
+  .sec-h{text-align:center;margin-bottom:48px}
+  .sec-h h2{font-family:'Bricolage Grotesque',sans-serif;font-size:clamp(26px,3.5vw,40px);font-weight:800;letter-spacing:-0.025em;color:var(--black);margin-bottom:10px}
+  .sec-h p{font-size:16px;color:var(--muted)}
+
+  /* Fix list in benefits */
+  .fix-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:10px;background:var(--bg-off);border:1.5px solid var(--border);margin-bottom:8px}
+  .fix-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+  .fix-dot.ok{background:#22c55e}
+  .fix-dot.warn{background:#f59e0b}
+  .fix-dot.err{background:#ef4444}
+  .fix-text{font-size:12px;color:var(--text);line-height:1.5}
+  .fix-text strong{font-weight:600;color:var(--black)}
+
+  @media(max-width:768px){.ats-stats{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="container">
+    <div class="nav-inner">
+      <a href="/" class="logo">
+        <div class="logo-mark"><svg width="12" height="16" viewBox="0 0 12 16" fill="none"><path d="M7.5 1L1 9.5H5.5L3.5 15L11 6.5H6.5L7.5 1Z" fill="#C5F135"/></svg></div>
+        Meteor
+      </a>
+      <ul class="nav-list">
+        <li class="has-drop">
+          <button class="nav-dd-btn" aria-expanded="false">
+            Features
+            <svg class="nav-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M2 4.5L6 8.5L10 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="nav-drop">
+            <a href="/features/auto-apply.html" class="dd-item"><div class="dd-icon">⚡</div><div><div class="dd-name">Auto-Apply</div><div class="dd-desc">Apply to 200+ jobs automatically</div></div></a>
+            <a href="/features/resume-builder.html" class="dd-item"><div class="dd-icon">📄</div><div><div class="dd-name">Resume Builder</div><div class="dd-desc">AI-optimized resumes for every job</div></div></a>
+            <a href="/features/ats-checker.html" class="dd-item"><div class="dd-icon">✅</div><div><div class="dd-name">ATS Checker</div><div class="dd-desc">Beat the algorithm, score your resume</div></div></a>
+            <a href="/features/job-tracker.html" class="dd-item"><div class="dd-icon">📊</div><div><div class="dd-name">Job Tracker</div><div class="dd-desc">Kanban board for your applications</div></div></a>
+            <a href="/features/interview-coach.html" class="dd-item"><div class="dd-icon">🎤</div><div><div class="dd-name">Interview Coach</div><div class="dd-desc">AI-powered interview prep</div></div></a>
+          </div>
+        </li>
+        <li><a href="/#pricing">Pricing</a></li>
+        <li><a href="#">Blog</a></li>
+      </ul>
+      <div class="nav-btns">
+        <a href="/auth/signin.html" class="btn btn-ghost">Sign in</a>
+        <a href="/auth/signup.html" class="btn btn-black">Get started</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="feat-hero">
+  <div class="container">
+    <div class="feat-eyebrow la la1">
+      <span class="feat-eyebrow-dot"></span>
+      ATS Checker
+    </div>
+    <h1 class="la la2">Beat the algorithm, <span class="hl">every time</span></h1>
+    <p class="la la3">75% of resumes never reach a human reviewer. Meteor scans your resume against the job description and gives you an exact score with actionable fixes — before you apply.</p>
+    <div class="feat-hero-btns la la4">
+      <a href="/auth/signup.html" class="btn btn-black btn-lg">Check my resume now →</a>
+      <a href="#how" class="btn btn-ghost btn-lg">See how it scores</a>
+    </div>
+
+    <!-- ATS score mockup -->
+    <div class="mockup-frame la la5">
+      <div class="mockup-bar">
+        <div class="mockup-dots">
+          <div class="mockup-dot" style="background:#ff5f57"></div>
+          <div class="mockup-dot" style="background:#febc2e"></div>
+          <div class="mockup-dot" style="background:#28c840"></div>
+        </div>
+        <span class="mockup-title">Meteor — ATS Score Report</span>
+      </div>
+      <div style="padding:24px;background:var(--bg-off);display:flex;gap:20px">
+        <!-- Score card -->
+        <div class="ats-panel" style="flex:1">
+          <div class="ats-panel-head">
+            <div class="ats-panel-title">ATS Score</div>
+            <span class="ats-badge">Analysis complete</span>
+          </div>
+          <div class="ats-body">
+            <div class="score-wrap">
+              <div class="score-circle">
+                <svg width="80" height="80" viewBox="0 0 80 80">
+                  <circle class="track" cx="40" cy="40" r="35"/>
+                  <circle class="fill" cx="40" cy="40" r="35"/>
+                </svg>
+                <div class="score-num">87<small>/100</small></div>
+              </div>
+              <div class="score-meta">
+                <p><strong>Great match.</strong> Your resume scores above 85% of applicants for this role. A few keyword tweaks will push you to 95+.</p>
+              </div>
+            </div>
+            <div class="kw-list">
+              <div class="kw-row">
+                <div class="kw-top"><span class="kw-name">React</span><span class="kw-pct">95%</span></div>
+                <div class="kw-track"><div class="kw-fill" style="width:95%"></div></div>
+              </div>
+              <div class="kw-row">
+                <div class="kw-top"><span class="kw-name">System Design</span><span class="kw-pct">80%</span></div>
+                <div class="kw-track"><div class="kw-fill" style="width:80%"></div></div>
+              </div>
+              <div class="kw-row">
+                <div class="kw-top"><span class="kw-name">Node.js</span><span class="kw-pct">70%</span></div>
+                <div class="kw-track"><div class="kw-fill warn" style="width:70%"></div></div>
+              </div>
+              <div class="kw-row">
+                <div class="kw-top"><span class="kw-name">TypeScript</span><span class="kw-pct">45%</span></div>
+                <div class="kw-track"><div class="kw-fill low" style="width:45%"></div></div>
+              </div>
+            </div>
+            <div class="ats-tip">
+              <span class="ats-tip-icon">💡</span>
+              <div class="ats-tip-text"><strong>Quick win:</strong> Add "TypeScript" and "REST APIs" to your skills section to boost your score by ~8 points.</div>
+            </div>
+          </div>
+        </div>
+        <!-- Fix list -->
+        <div style="flex:1;display:flex;flex-direction:column;gap:0">
+          <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:13px;font-weight:700;color:var(--black);margin-bottom:12px">Issues detected</div>
+          <div class="fix-item"><div class="fix-dot ok"></div><div class="fix-text"><strong>Formatting:</strong> Clean single-column layout detected. ATS-safe.</div></div>
+          <div class="fix-item"><div class="fix-dot warn"></div><div class="fix-text"><strong>Missing keyword:</strong> "TypeScript" mentioned 6× in JD, not in resume.</div></div>
+          <div class="fix-item"><div class="fix-dot warn"></div><div class="fix-text"><strong>Weak quantification:</strong> 2 bullet points lack measurable impact.</div></div>
+          <div class="fix-item"><div class="fix-dot err"></div><div class="fix-text"><strong>Missing section:</strong> No "Summary" section — reduces match score.</div></div>
+          <div class="fix-item"><div class="fix-dot ok"></div><div class="fix-text"><strong>File format:</strong> PDF detected. Parsed correctly.</div></div>
+          <div style="margin-top:12px;padding:10px 14px;background:var(--black);border-radius:9px;font-family:'Bricolage Grotesque',sans-serif;font-size:12px;font-weight:700;color:var(--lime);text-align:center;cursor:pointer">
+            ✦ Auto-fix all issues →
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="section" style="padding-top:0">
+  <div class="container">
+    <div class="ats-stats reveal">
+      <div class="ats-stat"><div class="ats-stat-val">87<span>pts</span></div><div class="ats-stat-lbl">Average score improvement</div></div>
+      <div class="ats-stat"><div class="ats-stat-val">75<span>%</span></div><div class="ats-stat-lbl">Resumes rejected by ATS unseen</div></div>
+      <div class="ats-stat"><div class="ats-stat-val">2<span>min</span></div><div class="ats-stat-lbl">To full analysis and fix list</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how" style="padding-top:0">
+  <div class="container">
+    <div class="sec-h reveal">
+      <h2>How ATS Checker works</h2>
+      <p>A precise score and an exact fix list — in minutes.</p>
+    </div>
+    <div class="how-grid">
+      <div class="how-step reveal d1">
+        <div class="how-num">1</div>
+        <h3>Upload your resume</h3>
+        <p>Drop your PDF or Word document. Meteor parses every section — experience, skills, education, summary — and flags any formatting issues that trip up ATS systems.</p>
+      </div>
+      <div class="how-step reveal d2">
+        <div class="how-num">2</div>
+        <h3>Add the job description</h3>
+        <p>Paste the full job description. Meteor extracts required skills, preferred qualifications, and company-specific language to benchmark your resume against.</p>
+      </div>
+      <div class="how-step reveal d3">
+        <div class="how-num">3</div>
+        <h3>Get your score and fix list</h3>
+        <p>Receive an exact 0–100 ATS score, a keyword gap analysis, formatting warnings, and one-click fixes. See exactly what's holding you back — and fix it instantly.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BENEFITS -->
+<section class="section" style="padding-top:0">
+  <div class="container">
+    <div class="benefit-grid">
+      <div class="benefit-text reveal">
+        <div class="sec-tag">Everything included</div>
+        <h2>Stop guessing. Start getting through.</h2>
+        <p>Most people never know why they don't hear back. Meteor shows you exactly where your resume falls short — and fixes it before you waste an application.</p>
+        <ul class="benefit-list">
+          <li><div class="b-check">✓</div> Instant ATS score from 0–100 benchmarked to the role</li>
+          <li><div class="b-check">✓</div> Missing keyword detection with frequency analysis</li>
+          <li><div class="b-check">✓</div> Formatting issue detection — tables, columns, special characters</li>
+          <li><div class="b-check">✓</div> One-click auto-fix applies all suggested improvements</li>
+          <li><div class="b-check">✓</div> Works with any job board — LinkedIn, Indeed, Greenhouse, Lever</li>
+        </ul>
+        <a href="/auth/signup.html" class="btn btn-black btn-lg">Check my resume now →</a>
+      </div>
+      <div class="reveal d2">
+        <div style="background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
+          <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:14px;font-weight:700;color:var(--black);margin-bottom:4px">Before &amp; after</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:18px">See how Meteor improves your score</div>
+          <!-- Before -->
+          <div style="margin-bottom:12px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <span style="font-size:11px;font-weight:600;color:var(--muted)">Before Meteor</span>
+              <span style="font-family:'Bricolage Grotesque',sans-serif;font-size:14px;font-weight:800;color:#ef4444">42 / 100</span>
+            </div>
+            <div style="height:8px;background:var(--bg-off);border-radius:100px;overflow:hidden;border:1px solid var(--border)">
+              <div style="height:100%;width:42%;background:#fca5a5;border-radius:100px"></div>
+            </div>
+          </div>
+          <!-- After -->
+          <div style="margin-bottom:20px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <span style="font-size:11px;font-weight:600;color:var(--muted)">After Meteor</span>
+              <span style="font-family:'Bricolage Grotesque',sans-serif;font-size:14px;font-weight:800;color:#16a34a">94 / 100</span>
+            </div>
+            <div style="height:8px;background:var(--bg-off);border-radius:100px;overflow:hidden;border:1px solid var(--border)">
+              <div style="height:100%;width:94%;background:var(--lime);border-radius:100px"></div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text)"><span style="color:#22c55e;font-size:14px">✓</span> 8 keywords added</div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text)"><span style="color:#22c55e;font-size:14px">✓</span> Summary section created</div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text)"><span style="color:#22c55e;font-size:14px">✓</span> 3 formatting issues resolved</div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text)"><span style="color:#22c55e;font-size:14px">✓</span> 5 bullet points quantified</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section" style="padding-top:0">
+  <div class="container">
+    <div class="cta-blk reveal">
+      <h2>Don't let an algorithm kill your chances.</h2>
+      <p>Check your resume for free. Get your score in 2 minutes.</p>
+      <div class="cta-btns">
+        <a href="/auth/signup.html" class="btn btn-lg btn-cta-l">Check my resume now →</a>
+        <a href="/" class="btn btn-lg btn-cta-g">See all features</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <a href="/" class="logo"><div class="logo-mark"><svg width="12" height="16" viewBox="0 0 12 16" fill="none"><path d="M7.5 1L1 9.5H5.5L3.5 15L11 6.5H6.5L7.5 1Z" fill="#C5F135"/></svg></div> Meteor</a>
+        <p>The AI-powered job platform that auto-applies, optimizes your resume, and gets you hired faster.</p>
+      </div>
+      <div class="foot-col"><h4>Product</h4><ul>
+        <li><a href="/features/auto-apply.html">Auto-Apply</a></li>
+        <li><a href="/features/resume-builder.html">Resume Builder</a></li>
+        <li><a href="/features/ats-checker.html">ATS Checker</a></li>
+        <li><a href="/features/job-tracker.html">Job Tracker</a></li>
+        <li><a href="/features/interview-coach.html">Interview Coach</a></li>
+      </ul></div>
+      <div class="foot-col"><h4>Company</h4><ul>
+        <li><a href="#">About</a></li><li><a href="#">Blog</a></li><li><a href="#">Careers</a></li><li><a href="#">Press</a></li>
+      </ul></div>
+      <div class="foot-col"><h4>Legal</h4><ul>
+        <li><a href="#">Privacy Policy</a></li><li><a href="#">Terms of Service</a></li><li><a href="#">Cookie Policy</a></li><li><a href="#">Contact</a></li>
+      </ul></div>
+    </div>
+    <div class="foot-bot">
+      <span>© 2025 Meteor, Inc. All rights reserved.</span>
+      <div class="foot-soc"><a href="#">Twitter</a><a href="#">LinkedIn</a><a href="#">GitHub</a></div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const ro = new IntersectionObserver(e => e.forEach(x => { if(x.isIntersecting) x.target.classList.add('in'); }), {threshold:0.1,rootMargin:'0px 0px -40px 0px'});
+  document.querySelectorAll('.reveal').forEach(el => ro.observe(el));
+  document.querySelectorAll('.has-drop').forEach(item => {
+    const btn = item.querySelector('.nav-dd-btn');
+    if (!btn) return;
+    btn.addEventListener('click', e => { e.stopPropagation(); const o = item.classList.contains('open'); document.querySelectorAll('.has-drop.open').forEach(el => el.classList.remove('open')); if(!o) item.classList.add('open'); });
+  });
+  document.addEventListener('click', () => document.querySelectorAll('.has-drop.open').forEach(el => el.classList.remove('open')));
+</script>
+</body>
+</html>

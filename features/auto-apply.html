@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Auto-Apply — Meteor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/css/shared.css"/>
+  <style>
+  /* Hero mockup */
+  .aa-feed{background:var(--white);border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+  .aa-feed-head{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+  .aa-feed-title{font-family:'Bricolage Grotesque',sans-serif;font-size:13px;font-weight:700;color:var(--black);display:flex;align-items:center;gap:8px}
+  .aa-live{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:#16a34a}
+  .live-dot{width:7px;height:7px;border-radius:50%;background:#16a34a;animation:pulse 1.4s infinite}
+  .aa-row{display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid #f3f4f6;transition:background .15s}
+  .aa-row:last-child{border-bottom:none}
+  .aa-row:hover{background:var(--bg-off)}
+  .aa-ico{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+  .aa-ico.g{background:#dcfce7;border-color:#bbf7d0}
+  .aa-ico.y{background:#fef9c3;border-color:#fde68a}
+  .aa-ico.p{background:#f3e8ff;border-color:#e9d5ff}
+  .aa-txt{flex:1;font-size:12px;color:var(--text)}
+  .aa-txt strong{font-weight:600;color:var(--black)}
+  .aa-txt .co{color:var(--muted)}
+  .aa-time{font-size:10px;color:var(--muted)}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+  /* Preferences UI */
+  .pref-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+  .pref-title{font-family:'Bricolage Grotesque',sans-serif;font-size:14px;font-weight:700;color:var(--black);margin-bottom:16px}
+  .pref-row{margin-bottom:12px}
+  .pref-row label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:5px;display:block}
+  .pref-chips{display:flex;flex-wrap:wrap;gap:5px}
+  .pref-chip{font-size:12px;font-weight:600;padding:4px 10px;border-radius:100px;border:1.5px solid var(--border);background:var(--white);color:var(--dark);cursor:pointer;transition:all .15s}
+  .pref-chip.on{background:var(--black);border-color:var(--black);color:var(--lime)}
+  .pref-range{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted)}
+  .pref-range input[type=range]{flex:1;accent-color:var(--black)}
+  .pref-val{font-weight:700;color:var(--black);min-width:52px}
+  .pref-save{width:100%;margin-top:16px;padding:10px;background:var(--black);color:var(--lime);border:none;border-radius:9px;font-family:'Bricolage Grotesque',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:background .2s}
+  .pref-save:hover{background:#222}
+
+  /* Stats */
+  .aa-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--border);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:48px}
+  .aa-stat{background:var(--white);padding:28px 20px;text-align:center}
+  .aa-stat-val{font-family:'Bricolage Grotesque',sans-serif;font-size:38px;font-weight:800;letter-spacing:-0.03em;color:var(--black);margin-bottom:4px}
+  .aa-stat-val span{color:var(--lime)}
+  .aa-stat-lbl{font-size:13px;color:var(--muted)}
+
+  @media(max-width:768px){.aa-stats{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="container">
+    <div class="nav-inner">
+      <a href="/" class="logo">
+        <div class="logo-mark">
+          <svg width="12" height="16" viewBox="0 0 12 16" fill="none">
+            <path d="M7.5 1L1 9.5H5.5L3.5 15L11 6.5H6.5L7.5 1Z" fill="#C5F135"/>
+          </svg>
+        </div>
+        Meteor
+      </a>
+      <ul class="nav-list">
+        <li class="has-drop">
+          <button class="nav-dd-btn" aria-expanded="false">
+            Features
+            <svg class="nav-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M2 4.5L6 8.5L10 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="nav-drop">
+            <a href="/features/auto-apply.html" class="dd-item">
+              <div class="dd-icon">⚡</div>
+              <div><div class="dd-name">Auto-Apply</div><div class="dd-desc">Apply to 200+ jobs automatically</div></div>
+            </a>
+            <a href="/features/resume-builder.html" class="dd-item">
+              <div class="dd-icon">📄</div>
+              <div><div class="dd-name">Resume Builder</div><div class="dd-desc">AI-optimized resumes for every job</div></div>
+            </a>
+            <a href="/features/ats-checker.html" class="dd-item">
+              <div class="dd-icon">✅</div>
+              <div><div class="dd-name">ATS Checker</div><div class="dd-desc">Beat the algorithm, score your resume</div></div>
+            </a>
+            <a href="/features/job-tracker.html" class="dd-item">
+              <div class="dd-icon">📊</div>
+              <div><div class="dd-name">Job Tracker</div><div class="dd-desc">Kanban board for your applications</div></div>
+            </a>
+            <a href="/features/interview-coach.html" class="dd-item">
+              <div class="dd-icon">🎤</div>
+              <div><div class="dd-name">Interview Coach</div><div class="dd-desc">AI-powered interview prep</div></div>
+            </a>
+          </div>
+        </li>
+        <li><a href="/#pricing">Pricing</a></li>
+        <li><a href="#">Blog</a></li>
+      </ul>
+      <div class="nav-btns">
+        <a href="/auth/signin.html" class="btn btn-ghost">Sign in</a>
+        <a href="/auth/signup.html" class="btn btn-black">Get started</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="feat-hero">
+  <div class="container">
+    <div class="feat-eyebrow la la1">
+      <span class="feat-eyebrow-dot"></span>
+      Auto-Apply
+    </div>
+    <h1 class="la la2">Apply to <span class="hl">200+ jobs</span><br/>while you sleep</h1>
+    <p class="la la3">Set your preferences once. Meteor matches roles, personalizes each application with AI, and submits them automatically — all while you focus on what matters.</p>
+    <div class="feat-hero-btns la la4">
+      <a href="/auth/signup.html" class="btn btn-black btn-lg">Start auto-applying free →</a>
+      <a href="#how" class="btn btn-ghost btn-lg">See how it works</a>
+    </div>
+
+    <!-- Live feed mockup -->
+    <div class="mockup-frame la la5">
+      <div class="mockup-bar">
+        <div class="mockup-dots">
+          <div class="mockup-dot" style="background:#ff5f57"></div>
+          <div class="mockup-dot" style="background:#febc2e"></div>
+          <div class="mockup-dot" style="background:#28c840"></div>
+        </div>
+        <span class="mockup-title">Meteor — Auto-Apply Feed</span>
+      </div>
+      <div style="padding:0" class="aa-feed">
+        <div class="aa-feed-head">
+          <div class="aa-feed-title">
+            <div class="logo-mark" style="width:22px;height:22px;border-radius:6px;background:var(--black)">
+              <svg width="9" height="12" viewBox="0 0 12 16" fill="none"><path d="M7.5 1L1 9.5H5.5L3.5 15L11 6.5H6.5L7.5 1Z" fill="#C5F135"/></svg>
+            </div>
+            Auto-Apply Feed
+          </div>
+          <div class="aa-live"><span class="live-dot"></span> Applying now</div>
+        </div>
+        <div class="aa-row">
+          <div class="aa-ico g">✓</div>
+          <div class="aa-txt"><strong>Applied to</strong> Senior React Developer <span class="co">@ Vercel</span></div>
+          <span class="aa-time">2m ago</span>
+        </div>
+        <div class="aa-row">
+          <div class="aa-ico y" style="animation:pulse 1.2s infinite">↻</div>
+          <div class="aa-txt"><strong>Applying to</strong> Frontend Engineer <span class="co">@ Figma</span></div>
+          <span class="aa-time">now</span>
+        </div>
+        <div class="aa-row">
+          <div class="aa-ico g">✓</div>
+          <div class="aa-txt"><strong>Applied to</strong> Software Engineer II <span class="co">@ Linear</span></div>
+          <span class="aa-time">5m ago</span>
+        </div>
+        <div class="aa-row">
+          <div class="aa-ico p">✦</div>
+          <div class="aa-txt"><strong>AI cover letter</strong> generated <span class="co">for Stripe</span></div>
+          <span class="aa-time">7m ago</span>
+        </div>
+        <div class="aa-row">
+          <div class="aa-ico g">✓</div>
+          <div class="aa-txt"><strong>Applied to</strong> ML Engineer <span class="co">@ OpenAI</span></div>
+          <span class="aa-time">9m ago</span>
+        </div>
+        <div class="aa-row">
+          <div class="aa-ico g">✓</div>
+          <div class="aa-txt"><strong>Applied to</strong> Fullstack Engineer <span class="co">@ Netflix</span></div>
+          <span class="aa-time">12m ago</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="section" style="padding-top:0">
+  <div class="container">
+    <div class="aa-stats reveal">
+      <div class="aa-stat"><div class="aa-stat-val">200<span>+</span></div><div class="aa-stat-lbl">Jobs applied per week</div></div>
+      <div class="aa-stat"><div class="aa-stat-val">3<span>×</span></div><div class="aa-stat-lbl">More interviews than manual applying</div></div>
+      <div class="aa-stat"><div class="aa-stat-val">94<span>%</span></div><div class="aa-stat-lbl">Application accuracy rate</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how" style="padding-top:0">
+  <div class="container">
+    <div class="sec-h reveal">
+      <h2>How Auto-Apply works</h2>
+      <p>Three steps to put your job search on autopilot.</p>
+    </div>
+    <div class="how-grid">
+      <div class="how-step reveal d1">
+        <div class="how-num">1</div>
+        <h3>Set your preferences</h3>
+        <p>Tell Meteor what you're looking for — role, location, salary range, remote preference, and companies to avoid. Takes under 3 minutes.</p>
+      </div>
+      <div class="how-step reveal d2">
+        <div class="how-num">2</div>
+        <h3>AI matches & tailors</h3>
+        <p>Meteor scans thousands of job boards daily, finds your best matches, and personalizes your resume and cover letter for each role using AI.</p>
+      </div>
+      <div class="how-step reveal d3">
+        <div class="how-num">3</div>
+        <h3>Applications sent automatically</h3>
+        <p>Meteor submits applications across all major ATS platforms — Greenhouse, Lever, Workday — and updates your tracker in real time.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PREFERENCE SETUP DEEP DIVE -->
+<section class="section" style="padding-top:0">
+  <div class="container">
+    <div class="benefit-grid">
+      <div class="benefit-text reveal">
+        <div class="sec-tag">Preferences</div>
+        <h2>You set the rules. Meteor does the work.</h2>
+        <p>Define exactly what you want — and what you don't. Meteor respects your preferences, skips companies you're not interested in, and only applies to roles that genuinely fit.</p>
+        <ul class="benefit-list">
+          <li><div class="b-check">✓</div> Target salary range with smart negotiation buffer</li>
+          <li><div class="b-check">✓</div> Remote, hybrid, or on-site — your choice</li>
+          <li><div class="b-check">✓</div> Company blocklist so you never apply somewhere twice</li>
+          <li><div class="b-check">✓</div> Visa sponsorship filter for international candidates</li>
+          <li><div class="b-check">✓</div> Pause, adjust, or stop any time</li>
+        </ul>
+        <a href="/auth/signup.html" class="btn btn-black btn-lg">Set up in 3 minutes →</a>
+      </div>
+      <div class="reveal d2">
+        <div class="pref-card">
+          <div class="pref-title">Your Preferences</div>
+          <div class="pref-row">
+            <label>Role type</label>
+            <div class="pref-chips">
+              <div class="pref-chip on">Engineering</div>
+              <div class="pref-chip on">Product</div>
+              <div class="pref-chip">Design</div>
+              <div class="pref-chip">Data</div>
+            </div>
+          </div>
+          <div class="pref-row">
+            <label>Work model</label>
+            <div class="pref-chips">
+              <div class="pref-chip on">Remote</div>
+              <div class="pref-chip on">Hybrid</div>
+              <div class="pref-chip">On-site</div>
+            </div>
+          </div>
+          <div class="pref-row">
+            <label>Target salary</label>
+            <div class="pref-range">
+              <span>$80k</span>
+              <input type="range" min="0" max="100" value="65" disabled/>
+              <span class="pref-val">$160k+</span>
+            </div>
+          </div>
+          <div class="pref-row">
+            <label>Experience level</label>
+            <div class="pref-chips">
+              <div class="pref-chip">Junior</div>
+              <div class="pref-chip on">Mid</div>
+              <div class="pref-chip on">Senior</div>
+              <div class="pref-chip">Staff</div>
+            </div>
+          </div>
+          <button class="pref-save">Save & start applying ⚡</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section" style="padding-top:0">
+  <div class="container">
+    <div class="cta-blk reveal">
+      <h2>Stop applying manually.<br/>Let Meteor do it.</h2>
+      <p>Join 50,000+ job seekers who found their next role with Meteor.</p>
+      <div class="cta-btns">
+        <a href="/auth/signup.html" class="btn btn-lg btn-cta-l">Start for free →</a>
+        <a href="/" class="btn btn-lg btn-cta-g">See all features</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <a href="/" class="logo">
+          <div class="logo-mark"><svg width="12" height="16" viewBox="0 0 12 16" fill="none"><path d="M7.5 1L1 9.5H5.5L3.5 15L11 6.5H6.5L7.5 1Z" fill="#C5F135"/></svg></div>
+          Meteor
+        </a>
+        <p>The AI-powered job platform that auto-applies, optimizes your resume, and gets you hired faster.</p>
+      </div>
+      <div class="foot-col"><h4>Product</h4><ul>
+        <li><a href="/features/auto-apply.html">Auto-Apply</a></li>
+        <li><a href="/features/resume-builder.html">Resume Builder</a></li>
+        <li><a href="/features/ats-checker.html">ATS Checker</a></li>
+        <li><a href="/features/job-tracker.html">Job Tracker</a></li>
+        <li><a href="/features/interview-coach.html">Interview Coach</a></li>
+      </ul></div>
+      <div class="foot-col"><h4>Company</h4><ul>
+        <li><a href="#">About</a></li><li><a href="#">Blog</a></li>
+        <li><a href="#">Careers</a></li><li><a href="#">Press</a></li>
+      </ul></div>
+      <div class="foot-col"><h4>Legal</h4><ul>
+        <li><a href="#">Privacy Policy</a></li><li><a href="#">Terms of Service</a></li>
+        <li><a href="#">Cookie Policy</a></li><li><a href="#">Contact</a></li>
+      </ul></div>
+    </div>
+    <div class="foot-bot">
+      <span>© 2025 Meteor, Inc. All rights reserved.</span>
+      <div class="foot-soc"><a href="#">Twitter</a><a href="#">LinkedIn</a><a href="#">GitHub</a></div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const ro = new IntersectionObserver(e => e.forEach(x => { if(x.isIntersecting) x.target.classList.add('in'); }), {threshold:0.1,rootMargin:'0px 0px -40px 0px'});
+  document.querySelectorAll('.reveal').forEach(el => ro.observe(el));
+  document.querySelectorAll('.has-drop').forEach(item => {
+    const btn = item.querySelector('.nav-dd-btn');
+    if (!btn) return;
+    btn.addEventListener('click', e => { e.stopPropagation(); const o = item.classList.contains('open'); document.querySelectorAll('.has-drop.open').forEach(el => el.classList.remove('open')); if(!o) item.classList.add('open'); });
+  });
+  document.addEventListener('click', () => document.querySelectorAll('.has-drop.open').forEach(el => el.classList.remove('open')));
+</script>
+</body>
+</html>
