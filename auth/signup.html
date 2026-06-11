@@ -22,7 +22,7 @@
   /* Top bar */
   .auth-top{padding:20px 28px;display:flex;align-items:center;justify-content:space-between}
   .logo{display:flex;align-items:center;gap:8px;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:17px;color:var(--black)}
-  .logo-mark{width:30px;height:30px;border-radius:8px;background:var(--black);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .logo-mark{width:30px;height:30px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
   .auth-top-link{font-size:14px;color:var(--muted)}
   .auth-top-link a{color:var(--black);font-weight:600}
   .auth-top-link a:hover{text-decoration:underline}
@@ -87,7 +87,8 @@
   <a href="/" class="logo">
     <div class="logo-mark">
       <svg width="12" height="16" viewBox="0 0 12 16" fill="none">
-        <path d="M7.5 1L1 9.5H5.5L3.5 15L11 6.5H6.5L7.5 1Z" fill="#C5F135"/>
+          <defs><linearGradient id="boltGrad" x1="0" y1="16" x2="12" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#C5F135"/><stop offset="100%" stop-color="#40c9c0"/></linearGradient></defs>
+          <path d="M7.5 1L1 9.5H5.5L3.5 15L11 6.5H6.5L7.5 1Z" fill="url(#boltGrad)"/>
       </svg>
     </div>
     Meteor

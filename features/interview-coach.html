@@ -17,7 +17,7 @@
   .chat-name{font-family:'Bricolage Grotesque',sans-serif;font-size:13px;font-weight:700;color:var(--black)}
   .chat-status{font-size:10px;color:#16a34a;font-weight:600;display:flex;align-items:center;gap:4px}
   .chat-status-dot{width:6px;height:6px;border-radius:50%;background:#16a34a;animation:pulse 1.4s infinite}
-  .chat-session-tag{font-size:10px;font-weight:700;padding:3px 9px;border-radius:100px;background:#f3e8ff;color:#7e22ce;border:1px solid #e9d5ff}
+  .chat-session-tag{font-size:10px;font-weight:700;padding:3px 9px;border-radius:100px;background:rgba(197,241,53,.15);color:#3a5c00;border:1px solid rgba(197,241,53,.4)}
   .chat-body{padding:18px 18px 12px;display:flex;flex-direction:column;gap:12px;background:var(--bg-off)}
   /* Bubbles */
   .bubble{display:flex;gap:9px;align-items:flex-start;max-width:88%}
@@ -71,7 +71,7 @@
   <div class="container">
     <div class="nav-inner">
       <a href="/" class="logo">
-        <div class="logo-mark"><svg width="12" height="16" viewBox="0 0 12 16" fill="none"><path d="M7.5 1L1 9.5H5.5L3.5 15L11 6.5H6.5L7.5 1Z" fill="#C5F135"/></svg></div>
+        <div class="logo-mark"><svg width="12" height="16" viewBox="0 0 12 16" fill="none"><defs><linearGradient id="boltGrad" x1="0" y1="16" x2="12" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#C5F135"/><stop offset="100%" stop-color="#40c9c0"/></linearGradient></defs><path d="M7.5 1L1 9.5H5.5L3.5 15L11 6.5H6.5L7.5 1Z" fill="url(#boltGrad)"/></svg></div>
         Meteor
       </a>
       <ul class="nav-list">
@@ -280,7 +280,7 @@
   <div class="container">
     <div class="foot-grid">
       <div class="foot-brand">
-        <a href="/" class="logo"><div class="logo-mark"><svg width="12" height="16" viewBox="0 0 12 16" fill="none"><path d="M7.5 1L1 9.5H5.5L3.5 15L11 6.5H6.5L7.5 1Z" fill="#C5F135"/></svg></div> Meteor</a>
+        <a href="/" class="logo"><div class="logo-mark"><svg width="12" height="16" viewBox="0 0 12 16" fill="none"><defs><linearGradient id="boltGrad" x1="0" y1="16" x2="12" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#C5F135"/><stop offset="100%" stop-color="#40c9c0"/></linearGradient></defs><path d="M7.5 1L1 9.5H5.5L3.5 15L11 6.5H6.5L7.5 1Z" fill="url(#boltGrad)"/></svg></div> Meteor</a>
         <p>The AI-powered job platform that auto-applies, optimizes your resume, and gets you hired faster.</p>
       </div>
       <div class="foot-col"><h4>Product</h4><ul>
