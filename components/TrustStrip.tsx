@@ -3,43 +3,32 @@
 import { motion } from "framer-motion";
 
 const LOGOS = [
-  { name: "Google", symbol: "G" },
-  { name: "Meta", symbol: "M" },
-  { name: "Apple", symbol: "" },
-  { name: "Microsoft", symbol: "⊞" },
-  { name: "Amazon", symbol: "A" },
-  { name: "Netflix", symbol: "N" },
-  { name: "Spotify", symbol: "♪" },
-  { name: "Airbnb", symbol: "◇" },
-  { name: "Uber", symbol: "U" },
-  { name: "Stripe", symbol: "$" },
-  { name: "Figma", symbol: "✦" },
-  { name: "Notion", symbol: "□" },
+  { name: "Google" }, { name: "Meta" }, { name: "Apple" }, { name: "Microsoft" },
+  { name: "Amazon" }, { name: "Netflix" }, { name: "Spotify" }, { name: "Airbnb" },
+  { name: "Uber" }, { name: "Stripe" }, { name: "Figma" }, { name: "Notion" },
 ];
 
 export function TrustStrip() {
   return (
-    <section style={{ background: "#fff", padding: "36px 0", borderBottom: "1px solid #e5e7eb", overflow: "hidden" }}>
+    <section style={{ background: "#fff", padding: "36px 0", borderBottom: "1px solid #f0f0f0", overflow: "hidden" }}>
       <motion.p
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
         transition={{ duration: 0.5 }}
-        style={{ textAlign: "center", fontSize: 12, fontWeight: 600, letterSpacing: ".1em", color: "#9ca3af", textTransform: "uppercase", marginBottom: 24 }}
+        style={{ textAlign: "center", fontSize: 12, fontWeight: 600, letterSpacing: ".1em", color: "#9ca3af", textTransform: "uppercase", marginBottom: 22 }}
       >
         Used by people hired at
       </motion.p>
       <div style={{ position: "relative", overflow: "hidden" }}>
-        <div className="animate-marquee" style={{ display: "flex", gap: 48, width: "max-content" }}>
+        <div className="animate-marquee" style={{ display: "flex", gap: 52, width: "max-content" }}>
           {[...LOGOS, ...LOGOS].map((logo, i) => (
-            <div key={`${logo.name}-${i}`} style={{ display: "flex", alignItems: "center", gap: 8, opacity: 0.5, flexShrink: 0, transition: "opacity .2s" }}
+            <div key={`${logo.name}-${i}`}
+              style={{ display: "flex", alignItems: "center", gap: 7, opacity: 0.4, flexShrink: 0, transition: "opacity .2s" }}
               onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
-              onMouseLeave={e => (e.currentTarget.style.opacity = "0.5")}
+              onMouseLeave={e => (e.currentTarget.style.opacity = "0.4")}
             >
-              <div style={{ width: 24, height: 24, borderRadius: 5, background: "#111", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: "#fff" }}>
-                {logo.symbol}
-              </div>
-              <span style={{ fontSize: 15, fontWeight: 700, color: "#111827", letterSpacing: "-.02em" }}>{logo.name}</span>
+              <span style={{ fontSize: 14, fontWeight: 800, color: "#0a0a0a", letterSpacing: "-.02em" }}>{logo.name}</span>
             </div>
           ))}
         </div>

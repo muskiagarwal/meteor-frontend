@@ -9,9 +9,9 @@ const BULLETS = [
 ];
 
 const SCORES = [
-  { label: "Keyword Match", score: 94, color: "#4ade80" },
-  { label: "Format Score", score: 88, color: "#60a5fa" },
-  { label: "Readability", score: 97, color: "#a78bfa" },
+  { label: "Keyword Match", score: 94, color: "#C5F135" },
+  { label: "Format Score", score: 88, color: "#a8cc20" },
+  { label: "Readability", score: 97, color: "#C5F135" },
 ];
 
 export function ResumeBuilder() {
@@ -29,16 +29,16 @@ export function ResumeBuilder() {
           {/* Resume card */}
           <div style={{ borderRadius: 12, border: "1px solid #e5e7eb", overflow: "hidden", boxShadow: "0 16px 48px rgba(0,0,0,.1)" }}>
             {/* Header bar */}
-            <div style={{ background: "linear-gradient(135deg,#7C3AED,#2563EB)", padding: "20px 22px" }}>
+            <div style={{ background: "linear-gradient(135deg,#1a1a1a,#C5F135)", padding: "20px 22px" }}>
               <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", marginBottom: 2 }}>Alex Johnson</div>
               <div style={{ fontSize: 12, color: "rgba(255,255,255,.7)" }}>Senior Frontend Engineer · San Francisco, CA</div>
             </div>
             {/* Body */}
             <div style={{ background: "#fff", padding: "18px 22px" }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: "#7C3AED", letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 10 }}>Experience</div>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#C5F135", letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 10 }}>Experience</div>
               <div style={{ marginBottom: 14 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: "#111827" }}>Stripe</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: "#0a0a0a" }}>Stripe</span>
                   <span style={{ fontSize: 10.5, color: "#9ca3af" }}>2021 – Present</span>
                 </div>
                 <div style={{ fontSize: 11.5, color: "#6b7280", marginBottom: 8 }}>Product Engineer, Checkout</div>
@@ -51,7 +51,7 @@ export function ResumeBuilder() {
                     transition={{ delay: 0.2 + i * 0.1, duration: 0.4 }}
                     style={{ display: "flex", gap: 6, marginBottom: 4 }}
                   >
-                    <span style={{ color: "#7C3AED", flexShrink: 0, marginTop: 2.5, fontSize: 8 }}>▶</span>
+                    <span style={{ color: "#C5F135", flexShrink: 0, marginTop: 2.5, fontSize: 8 }}>▶</span>
                     <span style={{ fontSize: 11, color: "#374151", lineHeight: 1.55 }}>{b}</span>
                   </motion.div>
                 ))}
@@ -101,9 +101,9 @@ export function ResumeBuilder() {
           transition={{ duration: 0.6 }}
         >
           <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 12px", borderRadius: 100, background: "rgba(37,99,235,.08)", border: "1px solid rgba(37,99,235,.2)", marginBottom: 20 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color: "#2563EB", letterSpacing: ".06em", textTransform: "uppercase" }}>AI Resume Builder</span>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", letterSpacing: ".06em", textTransform: "uppercase" }}>AI Resume Builder</span>
           </div>
-          <h2 style={{ fontFamily: "var(--font-bricolage)", fontWeight: 800, fontSize: "clamp(28px,3.5vw,44px)", letterSpacing: "-.03em", color: "#111827", margin: "0 0 18px", lineHeight: 1.1 }}>
+          <h2 style={{ fontFamily: "var(--font-bricolage)", fontWeight: 800, fontSize: "clamp(28px,3.5vw,44px)", letterSpacing: "-.03em", color: "#0a0a0a", margin: "0 0 18px", lineHeight: 1.1 }}>
             A resume that speaks<br />every job description's language
           </h2>
           <p style={{ fontSize: 16, color: "#6b7280", lineHeight: 1.7, marginBottom: 32 }}>
@@ -116,7 +116,7 @@ export function ResumeBuilder() {
             { icon: "✦", text: "One-click variants for different roles" },
           ].map((item) => (
             <div key={item.text} style={{ display: "flex", gap: 10, marginBottom: 14, alignItems: "flex-start" }}>
-              <span style={{ color: "#7C3AED", fontWeight: 700, marginTop: 1 }}>{item.icon}</span>
+              <span style={{ color: "#C5F135", fontWeight: 700, marginTop: 1 }}>{item.icon}</span>
               <span style={{ fontSize: 14.5, color: "#374151" }}>{item.text}</span>
             </div>
           ))}
