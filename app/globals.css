@@ -1,26 +1,81 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg:      #09090B;
+  --bg2:     #111117;
+  --violet:  #7C3AED;
+  --violetd: #6D28D9;
+  --blue:    #2563EB;
+  --lime:    #C5F135;
+  --limed:   #a8d020;
+  --dark:    #111827;
+  --muted:   #6b7280;
+  --light:   #9ca3af;
+  --border:  #e5e7eb;
+  --off:     #f9fafb;
+  --grad:    linear-gradient(135deg, #7C3AED 0%, #2563EB 100%);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: #ffffff;
+  --color-foreground: #111827;
+  --font-sans: var(--font-dm);
+  --font-display: var(--font-bricolage);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  html { scroll-behavior: smooth; }
+  body {
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    background: #fff;
+    color: #111827;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Gradient text */
+.grad-text {
+  background: linear-gradient(135deg, #7C3AED 0%, #2563EB 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Gradient border (pricing featured card) */
+.grad-border {
+  border: 1px solid transparent !important;
+  background: linear-gradient(white, white) padding-box,
+              linear-gradient(135deg, #7C3AED, #2563EB) border-box !important;
+}
+
+/* Marquee */
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-marquee { animation: marquee 22s linear infinite; }
+
+/* Float */
+@keyframes floatY {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-10px); }
+}
+.animate-float { animation: floatY 7s ease-in-out infinite; }
+
+/* Pulse dot */
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+.animate-pulse-dot { animation: pulseDot 1.4s ease-in-out infinite; }
+
+/* Shimmer */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+.animate-shimmer {
+  background: linear-gradient(90deg, rgba(124,58,237,.08) 0%, rgba(124,58,237,.3) 50%, rgba(124,58,237,.08) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2.2s infinite;
 }
